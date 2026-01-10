@@ -1,0 +1,221 @@
+---
+title: "visualization"
+author: Chaeeun Shin
+output: html_document
+---
+## Overview
+This section provides descriptive visualization of the synthetic patient dataset used in the analysis. The figures summarize patient characteristics and treatment distributions, including: 
+
+1. Demographic characteristics of the overall study population
+2. Distribution of prescribed JAK inhibitors
+3. Demographic characteristics of patients treated with JAK inhibitor 1
+4. Demographic characteristics of patients treated with JAK inhibitor 2
+5. Demographic characteristics of patients treated with JAK inhibitor 3
+
+These visualizations provide context for subsequent comparative analysis of treatment effectiveness of alopecia across JAK inhibitor groups. 
+
+## Install packages
+```{r, echo = FALSE}
+library(ggplot2)
+library(UpSetR)
+library(tidyverse)
+```
+
+## Read synthetic data
+```{r}
+data <- read.csv("synthetic_data.csv")
+jak___1 <- data %>%
+  filter(specify_jak_inhibitor___1 == 1)
+jak___2 <- data %>%
+  filter(specify_jak_inhibitor___2 == 1)
+jak___3 <- data %>%
+  filter(specify_jak_inhibitor___3 == 1)
+```
+
+# Demographic visualization: Entire data
+```{r}
+data$age_group <- cut(data$age, breaks = seq(0, max(data$age, na.rm = TRUE) + 10, by = 10), right = FALSE, labels = paste(seq(0, max(data$age, na.rm = TRUE), by = 10), seq(9, max(data$age, na.rm = TRUE) + 9, by = 10), sep = "-"))
+ggplot(data, aes(x = age_group)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "Age Distribution", x = "Age Group", y = "Count") +
+  theme_bw()
+
+data$ethnicity <- factor(data$ethnicity,
+                  levels = c("0","1","2","77"),
+                  labels = c("Hispanic or Latino", "NOT Hispanic or Latino", "Unknown / Not Reported", "Other"))
+
+
+ggplot(data, aes(x = ethnicity)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "Ethnicity Distribution", x = "Ethnicity", y = "Count") +
+  theme_bw()
+
+data$race <- factor(data$race,
+                  levels = c(0,1,2,3,4,5,6,77),
+                  labels = c("American Indian/Alaska Native", "Asian", "Native Hawaiian or Other Pacific Islander", "Black or African American", "White or Caucasian", "More than One Race", "Unknown / Not Reported", "Other"))
+
+ggplot(data, aes(x = race)) +
+  geom_bar(fill = "azure3", color = "black") +
+  labs(title = "Race Distribution", x = "Race", y = "Count") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 7))
+
+data$sex <- factor(data$sex,
+                 levels = c(0,1),
+                 labels = c("Female", "Male"))
+
+ggplot(data, aes(x = sex)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "Sex Distribution", x = "Sex", y = "Count") +
+  theme_bw()
+```
+
+# JAK inhibitor visualization
+```{r}
+InhibitorType <- data[,c("specify_jak_inhibitor___1", "specify_jak_inhibitor___2", "specify_jak_inhibitor___3")]
+colnames(InhibitorType) <- c("JAK_1", "JAK_2", "JAK_3")
+
+upset(InhibitorType,
+      nsets = 5,
+      order.by ="freq",
+      sets = names(InhibitorType),
+      mainbar.y.label = "Number of Patients",
+      sets.x.label = "Inhibitor Type"
+      )
+```
+
+## Demographic visualization: JAK inhibitor 1
+```{r}
+jak___1$age_group <- cut(jak___1$age, breaks = seq(0, max(jak___1$age, na.rm = TRUE) + 10, by = 10),
+                    right = FALSE, labels = paste(seq(0, max(jak___1$age, na.rm = TRUE), by
+                    = 10), seq(9, max(jak___1$age, na.rm = TRUE) + 9, by = 10), sep = "-"))
+ggplot(jak___1, aes(x = age_group)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 1 - Age Distribution", x = "Age Group", y = "Count") +
+  theme_bw()
+
+jak___1$ethnicity <- factor(jak___1$ethnicity,
+                  levels = c("0","1","2","77"),
+                  labels = c("Hispanic or Latino", "NOT Hispanic or Latino", "Unknown / Not Reported", "Other"))
+
+
+ggplot(jak___1, aes(x = ethnicity)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 1 - Ethnicity Distribution", x = "Ethnicity", y = "Count") +
+  theme_bw()
+
+jak___1$race <- factor(jak___1$race,
+                  levels = c(0,1,2,3,4,5,6,77),
+                  labels = c("American Indian/Alaska Native", "Asian", "Native Hawaiian or Other Pacific Islander", "Black or African American", "White or Caucasian", "More than One Race", "Unknown / Not Reported", "Other"))
+
+ggplot(jak___1, aes(x = race)) +
+  geom_bar(fill = "azure3", color = "black") +
+  labs(title = "JAK inhibitor 1 - Race Distribution", x = "Race", y = "Count") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 7))
+
+jak___1$sex <- factor(jak___1$sex,
+                 levels = c(0,1),
+                 labels = c("Female", "Male"))
+
+ggplot(jak___1, aes(x = sex)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 1 - Sex Distribution", x = "Sex", y = "Count") +
+  theme_bw()
+```
+
+## Demographic visualization: JAK inhibitor 2
+```{r}
+jak___2$age_group <- cut(jak___2$age, breaks = seq(0, max(jak___2$age, na.rm = TRUE) + 10, by = 10),
+                    right = FALSE, labels = paste(seq(0, max(jak___2$age, na.rm = TRUE), by
+                    = 10), seq(9, max(jak___2$age, na.rm = TRUE) + 9, by = 10), sep = "-"))
+ggplot(jak___2, aes(x = age_group)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 2 - Age Distribution", x = "Age Group", y = "Count") +
+  theme_bw()
+
+jak___2$ethnicity <- factor(jak___2$ethnicity,
+                  levels = c("0","1","2","77"),
+                  labels = c("Hispanic or Latino", "NOT Hispanic or Latino", "Unknown / Not Reported", "Other"))
+
+
+ggplot(jak___2, aes(x = ethnicity)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 2 - Ethnicity Distribution", x = "Ethnicity", y = "Count") +
+  theme_bw()
+
+jak___2$race <- factor(jak___2$race,
+                  levels = c(0,1,2,3,4,5,6,77),
+                  labels = c("American Indian/Alaska Native", "Asian", "Native Hawaiian or Other Pacific Islander", "Black or African American", "White or Caucasian", "More than One Race", "Unknown / Not Reported", "Other"))
+
+ggplot(jak___2, aes(x = race)) +
+  geom_bar(fill = "azure3", color = "black") +
+  labs(title = "JAK inhibitor 2 - Race Distribution", x = "Race", y = "Count") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 7))
+
+jak___2$sex <- factor(jak___2$sex,
+                 levels = c(0,1),
+                 labels = c("Female", "Male"))
+
+ggplot(jak___2, aes(x = sex)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 2 - Sex Distribution", x = "Sex", y = "Count") +
+  theme_bw()
+```
+
+## Demographic visualization: JAK inhibitor 3
+```{r}
+jak___3$age_group <- cut(jak___3$age, breaks = seq(0, max(jak___3$age, na.rm = TRUE) + 10, by = 10),
+                    right = FALSE, labels = paste(seq(0, max(jak___3$age, na.rm = TRUE), by
+                    = 10), seq(9, max(jak___3$age, na.rm = TRUE) + 9, by = 10), sep = "-"))
+ggplot(jak___3, aes(x = age_group)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 3 - Age Distribution", x = "Age Group", y = "Count") +
+  theme_bw()
+
+jak___3$ethnicity <- factor(jak___3$ethnicity,
+                  levels = c("0","1","2","77"),
+                  labels = c("Hispanic or Latino", "NOT Hispanic or Latino", "Unknown / Not Reported", "Other"))
+
+
+ggplot(jak___3, aes(x = ethnicity)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 3 - Ethnicity Distribution", x = "Ethnicity", y = "Count") +
+  theme_bw()
+
+jak___3$race <- factor(jak___3$race,
+                  levels = c(0,1,2,3,4,5,6,77),
+                  labels = c("American Indian/Alaska Native", "Asian", "Native Hawaiian or Other Pacific Islander", "Black or African American", "White or Caucasian", "More than One Race", "Unknown / Not Reported", "Other"))
+
+ggplot(jak___3, aes(x = race)) +
+  geom_bar(fill = "azure3", color = "black") +
+  labs(title = "JAK inhibitor 3 - Race Distribution", x = "Race", y = "Count") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 7))
+
+jak___3$sex <- factor(jak___3$sex,
+                 levels = c(0,1),
+                 labels = c("Female", "Male"))
+
+ggplot(jak___3, aes(x = sex)) +
+  geom_bar(fill = "azure3", color = "black") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.3, size = 3) +
+  labs(title = "JAK inhibitor 3 - Sex Distribution", x = "Sex", y = "Count") +
+  theme_bw()
+```

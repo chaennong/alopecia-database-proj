@@ -1,0 +1,103 @@
+---
+title: "analysis_report"
+author: Chaeeun Shin
+output: html_document
+---
+## Abstract
+**Background:**
+Janus kinase (JAK) inhibitors are commonly used systemic treatments in alopecia, with multiple agents available in clinical practice. However, comparative evaluation is often challenged by small sample sizes ans sparse outcome data. This study aims to demonstrate a reproducible analytical framework for comparing treatment outcomes between JAK inhibitors using exact statistical methods. 
+
+**Methods:**
+Using a synthetic dataset generated to preserve the structural properties. of an original REDCap-based clinical dataset, we compared treatment outcomes between patients receiving JAK inhibitor 3 only and those receiving JAK inhibitor 1 only, as well as JAK inhibitor 3 only versus JAK inhibitor 2 only. Binary outcome variables were analyzed using Fisher's exact test due to small cell counts. Risk differences were estimated to quantify absolute differences in outcome proportions, and confidence intervals were constructed using a non-parametric approach. 
+
+**Result:**
+A pairwise comparison of treatment effectiveness between JAK inhibitor 1 and JAK inhibitor 3 was conducted using Fisher's exact test due to the binary outcome. In the JAK inhibitor 1 group, 121 of 186 patients (65.1%) showed improvement, compared with 455 of 635 patients (71.7%) in the JAK inhibitor 3 group.
+
+
+The estimated odds ratio was 0.74, indicating lower odds of improvement with JAK inhibitor 1 relative to JAK inhibitor 3. However, this difference was not significantly significant (two-sided Fisher's exact test, p = 0.1008, 95% CI: 0.51 to 1.06)
+
+
+The risk difference (JAK inhibitor 3 minus JAK inhibitor 1) was -0.055, corresponding to an absolute 5.5% lower improvement rate in the JAK inhibitor 3 group. The 95% confidence interval for the risk difference included zero (-0.145, 0.008), indicating no statistically significant difference in improvement rates between the two treatments. 
+
+
+A pairwise comparison of treatment effectiveness between JAK inhibitor 3 and JAK inhibitor 2 was performed using Fisher's exact test due to the small sample size in the JAK inhibitor 2 group. In the JAK inhibitor 3 group, 121 of 186 patients (65.1%) demonstrated improvement, compared with 26 of 31 patients (83.9%) in the JAK inhibitor 2 group. 
+
+
+The estimated odds ratio was 0.36, indicating lower odds of improvement with JAK inhibitor 3 relative to JAK inhibitor 2. This difference was statistically significant based on the two-sided Fisher's exact test (p = 0.0396, 95% CI: 0.10 to 1.01)
+
+
+The risk difference (JAK inhibitor 3 minus JAK inhibitor 2) was -0.105, corresponding to an absolute 10.% lower improvement rate in the JAK inhibitor 3 group. The 95% confidence interval for the risk difference (-0.308 to -0.011) did not include zero, providing further evidence of a statistically significant difference in improvement rates. 
+
+
+Overall, these results suggest that JAK inhibitor 2 was associated with a higher improvement rate compared with JAK inhibitor 3 in this sample.
+
+**Conclusion:**
+In this analysis, Fisher’s exact test and risk difference estimation were applied to compare binary treatment outcomes between JAK inhibitors under conditions of limited sample size. While no statistically significant difference was observed between JAK inhibitor 1 and JAK inhibitor 3, both exact inference and risk-based measures suggested comparable improvement rates between these two treatments. In contrast, a statistically significant difference was detected between JAK inhibitor 3 and JAK inhibitor 2, with JAK inhibitor 2 demonstrating a higher observed improvement rate.
+
+These findings illustrate how exact statistical methods and absolute effect measures can provide complementary insights in small-sample comparative analyses. Importantly, this study emphasizes an analytical framework rather than definitive clinical conclusions, demonstrating a reproducible approach for handling sparse binary outcomes, conditional missingness, and treatment-specific comparisons using synthetic clinical data. Such a framework may be useful for exploratory analyses and methodological demonstrations in early-stage or limited-sample clinical research settings.
+
+## Package install
+```{r}
+library(PropCIs)
+library(tidyverse)
+```
+
+## Read synthetic data
+```{r}
+data <- read.csv("synthetic_data.csv")
+jak1_only <- data %>%
+  filter(specify_jak_inhibitor___1 == 1 & specify_jak_inhibitor___2 == 0 & specify_jak_inhibitor___3 == 0)
+jak2_only <- data %>%
+  filter(specify_jak_inhibitor___1 == 0 & specify_jak_inhibitor___2 == 1 & specify_jak_inhibitor___3 == 0)
+jak3_only <- data %>%
+  filter(specify_jak_inhibitor___1 == 0 & specify_jak_inhibitor___2 == 0 & specify_jak_inhibitor___3 == 1)
+```
+
+## JAK inhibitor 1 vs. JAK inhibitor 3
+```{r}
+succ_1 <- sum(jak1_only$result___1 == 1, na.rm = TRUE)
+n_1 <- nrow(jak1_only)
+
+succ_3 <- sum(jak3_only$result___3 == 1, na.rm = TRUE)
+n_3 <- nrow(jak3_only)
+
+a <- succ_3
+b <- n_3 - succ_3
+c <- succ_1
+d <- n_1 - succ_1
+
+tbl <- matrix(c(a,b,c,d), nrow = 2, byrow = TRUE)
+rownames(tbl) <- c("JAK inhibitor 1", "JAK inhibitor 3")
+colnames(tbl) <- c("Improved", "Not Improved")
+
+print(tbl)
+
+fisher_test <- fisher.test(tbl, alternative = "two.sided")
+print(fisher_test)
+
+RD <- (a/(a+c))-(b/(b+d))
+cat("Risk Difference: ", RD)
+diffscoreci(a, a+b, c, c+d, conf.level = 0.95)
+```
+
+# JAK inhibitor 2 vs. JAK inhibitor 3
+```{r}
+succ_2 <- sum(jak2_only$result___2 == 1, na.rm = TRUE)
+n_2 <- nrow(jak2_only)
+
+c <- succ_2
+d <- n_2 - succ_2
+
+tbl <- matrix(c(a,b,c,d), nrow = 2, byrow = TRUE)
+rownames(tbl) <- c("JAK inhibitor 3", "JAK inhibitor 2")
+colnames(tbl) <- c("Improved", "Not Improved")
+
+print(tbl)
+
+fisher_test <- fisher.test(tbl, alternative = "two.sided")
+print(fisher_test)
+
+RD <- (a/(a+c))-(b/(b+d))
+cat("Risk Difference: ", RD)
+diffscoreci(a, a+b, c, c+d, conf.level = 0.95)
+```
