@@ -6,6 +6,7 @@ Synthetic clinical dataset and reproducible analysis workflow comparing JAK inhi
 ## Repository Structure
 - 'data/': synthetic dataset
 - 'R/': data simulation scripts
+- 'visualization/': visualization of synthetic data
 - 'analysis/' R markdown analysis report
 
 ## Disclaimer
